@@ -7,13 +7,9 @@
    ```bash
    pip install -r requirements.txt
    ```
-3. Set environment variables:
+3. Set MongoDB URI:
    ```bash
    export MONGO_URI="mongodb://localhost:27017/student_portal"
-   export JWT_SECRET="super-secret-key"
-   export JWT_EXPIRY_HOURS="24"
-   export PORT="5000"
-   export FLASK_DEBUG="false"
    ```
 4. Run server:
    ```bash
@@ -25,8 +21,8 @@ The API runs on `http://localhost:5000`.
 ## API Endpoints
 
 - `GET /api/health` - API health check.
-- `POST /api/register` - Register a student and return JWT token.
-- `POST /api/login` - Student login and return JWT token.
+- `POST /api/register` - Register a student.
+- `POST /api/login` - Student login.
 - `GET /api/jobs` - List jobs.
 - `POST /api/jobs` - Create a job.
 - `POST /api/jobs/<job_id>/apply` - Apply to a job.
@@ -53,17 +49,6 @@ The API runs on `http://localhost:5000`.
     "12th": 88,
     "cgpa": 8.7
   }
-}
-```
-
-### Register/Login Response (sample)
-
-```json
-{
-  "message": "Student registered successfully",
-  "student_id": "<student_object_id>",
-  "role": "student",
-  "token": "<jwt_token>"
 }
 ```
 

@@ -1,7 +1,6 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
-import jwt
 from bson import ObjectId
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
@@ -11,10 +10,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 app = Flask(__name__)
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/student_portal")
-JWT_SECRET = os.getenv("JWT_SECRET", "change-this-secret")
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRY_HOURS = int(os.getenv("JWT_EXPIRY_HOURS", "24"))
-
 client = MongoClient(MONGO_URI)
 db = client.get_database("student_portal")
 
@@ -44,19 +39,6 @@ def parse_object_id(value: str, field_name: str):
         return None, jsonify({"error": f"Invalid {field_name}"}), 400
 
 
-def create_jwt_token(student: dict) -> str:
-    now = datetime.now(timezone.utc)
-    payload = {
-        "sub": str(student["_id"]),
-        "email": student["email"],
-        "name": student["name"],
-        "role": student.get("role", "student"),
-        "iat": now,
-        "exp": now + timedelta(hours=JWT_EXPIRY_HOURS),
-    }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
-
 @app.get("/api/health")
 def health_check():
     return jsonify({"status": "ok"})
@@ -80,7 +62,6 @@ def register_student():
         "name": name,
         "email": email.lower(),
         "password_hash": generate_password_hash(password),
-        "role": "student",
         "skills": payload.get("skills", []),
         "projects": payload.get("projects", []),
         "marks": payload.get("marks", {}),
@@ -88,16 +69,12 @@ def register_student():
     }
 
     insert_result = students_collection.insert_one(student_document)
-    student_document["_id"] = insert_result.inserted_id
-    token = create_jwt_token(student_document)
 
     return (
         jsonify(
             {
                 "message": "Student registered successfully",
                 "student_id": str(insert_result.inserted_id),
-                "role": student_document["role"],
-                "token": token,
             }
         ),
         201,
@@ -119,15 +96,11 @@ def login_student():
     if not student or not check_password_hash(student["password_hash"], password):
         return jsonify({"error": "Invalid email or password"}), 401
 
-    token = create_jwt_token(student)
-
     return jsonify(
         {
             "message": "Login successful",
             "student_id": str(student["_id"]),
             "name": student["name"],
-            "role": student.get("role", "student"),
-            "token": token,
         }
     )
 
@@ -225,8 +198,4 @@ def get_student_profile(student_id):
 
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", "5000")),
-        debug=os.getenv("FLASK_DEBUG", "false").lower() == "true",
-    )
+    app.run(host="0.0.0.0", port=5000, debug=True)
