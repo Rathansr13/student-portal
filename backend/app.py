@@ -9,7 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://thanvirain2006_db_user:Indira%8762@student-cluster.oaf2jax.mongodb.net/?appName=student-cluster")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://root:root@cluster0.36yc3az.mongodb.net/?appName=Cluster0")
 client = MongoClient(MONGO_URI)
 db = client.get_database("student_portal")
 
