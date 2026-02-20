@@ -12,6 +12,8 @@
    export MONGO_URI="mongodb://localhost:27017/student_portal"
    export JWT_SECRET="super-secret-key"
    export JWT_EXPIRY_HOURS="24"
+   export PORT="5000"
+   export FLASK_DEBUG="false"
    ```
 4. Run server:
    ```bash

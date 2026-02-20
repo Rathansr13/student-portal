@@ -10,6 +10,8 @@ Set environment variables:
 ```bash
 export BACKEND_BASE_URL="http://localhost:5000"
 export JWT_SECRET="super-secret-key"
+export PORT="5001"
+export FLASK_DEBUG="false"
 ```
 
 > `JWT_SECRET` in proxy must match backend `JWT_SECRET`.
