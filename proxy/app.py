@@ -5,7 +5,7 @@ from flask import Flask, Response, jsonify, request
 
 app = Flask(__name__)
 
-BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://localhost:5000")
+BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "https://student-portal-y3nh.onrender.com/")
 
 
 EXCLUDED_HEADERS = {
