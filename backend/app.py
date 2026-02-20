@@ -9,7 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/student_portal")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://thanvirain2006_db_user:Indira%8762@student-cluster.oaf2jax.mongodb.net/?appName=student-cluster")
 client = MongoClient(MONGO_URI)
 db = client.get_database("student_portal")
 
@@ -39,9 +39,41 @@ def parse_object_id(value: str, field_name: str):
         return None, jsonify({"error": f"Invalid {field_name}"}), 400
 
 
+def check_database_connection() -> dict:
+    """Check MongoDB database connection status."""
+    try:
+        # Test connection with a ping
+        client.admin.command('ping')
+        
+        # Get database info
+        collections = db.list_collection_names()
+        stats = {
+            "status": "connected",
+            "database": db.name,
+            "collections": collections,
+            "collection_counts": {
+                coll: db[coll].count_documents({}) for coll in collections
+            }
+        }
+        return stats
+    except Exception as e:
+        return {
+            "status": "disconnected",
+            "error": str(e)
+        }
+
+
 @app.get("/api/health")
 def health_check():
     return jsonify({"status": "ok"})
+
+
+@app.get("/api/db/connection")
+def db_connection_check():
+    """Endpoint to check database connection status."""
+    result = check_database_connection()
+    status_code = 200 if result["status"] == "connected" else 503
+    return jsonify(result), status_code
 
 
 @app.post("/api/register")
@@ -198,4 +230,24 @@ def get_student_profile(student_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    print("\n" + "="*50)
+    print("Starting Student Portal Backend...")
+    print("="*50)
+    
+    # Check database connection on startup
+    db_status = check_database_connection()
+    if db_status["status"] == "connected":
+        print(f"✓ Database Connection: {db_status['status'].upper()}")
+        print(f"  Database: {db_status['database']}")
+        print(f"  Collections: {', '.join(db_status['collections']) if db_status['collections'] else 'None'}")
+        if db_status['collection_counts']:
+            for coll, count in db_status['collection_counts'].items():
+                print(f"    - {coll}: {count} documents")
+    else:
+        print(f"✗ Database Connection: {db_status['status'].upper()}")
+        print(f"  Error: {db_status['error']}")
+    
+    print("="*50 + "\n")
+    
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
